@@ -94,6 +94,7 @@ export default function NickChatbot() {
           query: userMessage.text,
           conversationHistory: conversationHistory,
         }),
+        cache: 'no-store',
       });
 
       if (!response.ok) {
