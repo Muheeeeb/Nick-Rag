@@ -98,7 +98,15 @@ export default function NickChatbot() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        // Try to get error message from response
+        let errorMessage = 'Failed to get response';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || `Server error: ${response.status}`;
+        } catch (e) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -123,14 +131,24 @@ export default function NickChatbot() {
       );
     } catch (error) {
       console.error('Error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      
       const errorMessage = error instanceof Error 
         ? error.message 
         : 'Sorry, I encountered an error. Please try again.';
       
       // Check if it's a configuration error
       let displayMessage = errorMessage;
-      if (errorMessage.includes('environment variables') || errorMessage.includes('OPENAI_API_KEY') || errorMessage.includes('PINECONE')) {
-        displayMessage = 'Configuration Error: Please check that your environment variables (OPENAI_API_KEY, PINECONE_API_KEY, PINECONE_INDEX) are set in your .env.local file.';
+      if (errorMessage.includes('environment variables') || 
+          errorMessage.includes('OPENAI_API_KEY') || 
+          errorMessage.includes('PINECONE') ||
+          errorMessage.includes('Configuration error')) {
+        displayMessage = 'Configuration Error: Please check that your environment variables (OPENAI_API_KEY, PINECONE_API_KEY, PINECONE_INDEX) are set correctly in Vercel.';
+      } else if (errorMessage.includes('Failed to get response') || errorMessage.includes('Server error')) {
+        displayMessage = `Server Error: ${errorMessage}. Please check Vercel function logs for more details.`;
       }
       
       setMessages((prev) =>

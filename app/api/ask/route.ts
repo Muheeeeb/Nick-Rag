@@ -35,23 +35,45 @@ export async function POST(request: NextRequest) {
 
     // Check environment variables before running RAG
     const missingVars = [];
-    if (!process.env.OPENAI_API_KEY) missingVars.push('OPENAI_API_KEY');
-    if (!process.env.PINECONE_API_KEY) missingVars.push('PINECONE_API_KEY');
-    if (!process.env.PINECONE_INDEX) missingVars.push('PINECONE_INDEX');
+    const envCheck = {
+      OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+      PINECONE_API_KEY: !!process.env.PINECONE_API_KEY,
+      PINECONE_INDEX: !!process.env.PINECONE_INDEX,
+    };
+    
+    if (!envCheck.OPENAI_API_KEY) missingVars.push('OPENAI_API_KEY');
+    if (!envCheck.PINECONE_API_KEY) missingVars.push('PINECONE_API_KEY');
+    if (!envCheck.PINECONE_INDEX) missingVars.push('PINECONE_INDEX');
+    
+    console.log('Environment variables check:', {
+      ...envCheck,
+      PINECONE_INDEX_VALUE: process.env.PINECONE_INDEX,
+      PINECONE_ENV: process.env.PINECONE_ENVIRONMENT,
+    });
     
     if (missingVars.length > 0) {
       console.error('Missing environment variables:', missingVars);
       return NextResponse.json(
         {
           error: 'Configuration error',
-          message: `Missing required environment variables: ${missingVars.join(', ')}. Please check your .env file or environment configuration.`,
+          message: `Missing required environment variables: ${missingVars.join(', ')}. Please check your Vercel environment variables and redeploy.`,
+          debug: envCheck,
         },
         { status: 500, headers }
       );
     }
 
+    console.log('Starting RAG processing for query:', query.substring(0, 50));
+    console.log('Environment check:', {
+      hasOpenAI: !!process.env.OPENAI_API_KEY,
+      hasPinecone: !!process.env.PINECONE_API_KEY,
+      hasIndex: !!process.env.PINECONE_INDEX,
+    });
+
     // Run RAG with conversation history
     const result = await runRAG(query.trim(), conversationHistory || []);
+
+    console.log('RAG processing completed successfully');
 
     // Return answer with headers
     return NextResponse.json(
@@ -72,12 +94,17 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('API error:', error);
+    console.error('Error type:', error?.constructor?.name);
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
+    // Return detailed error for debugging (in production, you might want to hide details)
     return NextResponse.json(
       {
         error: 'Internal server error',
         message: error instanceof Error ? error.message : 'Unknown error',
+        // Include error type for debugging
+        type: error?.constructor?.name || 'Unknown',
       },
       {
         status: 500,
