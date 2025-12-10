@@ -185,6 +185,9 @@ async function ingest() {
   console.log(`\n📦 Total chunks to process: ${allChunks.length}`);
 
   // Get Pinecone index
+  if (!PINECONE_INDEX) {
+    throw new Error('PINECONE_INDEX environment variable is not set');
+  }
   const index = pinecone.index(PINECONE_INDEX);
 
   // Process chunks in batches
