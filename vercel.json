@@ -1,0 +1,12 @@
+{
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "app/api/ask/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
+

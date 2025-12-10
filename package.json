@@ -1,0 +1,42 @@
+{
+  "name": "rag-vercel-system",
+  "version": "1.0.0",
+  "description": "Production-ready RAG system optimized for Vercel deployment",
+  "main": "index.js",
+  "scripts": {
+    "ingest": "tsx scripts/ingest.ts",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "keywords": [
+    "rag",
+    "vercel",
+    "pinecone",
+    "openai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@pinecone-database/pinecone": "^3.0.0",
+    "dotenv": "^16.4.5",
+    "next": "^14.1.0",
+    "openai": "^4.28.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vercel/node": "^3.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
